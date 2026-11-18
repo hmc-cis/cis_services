@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>HMC CIS/ARCS Service Finder — Prototype</title>
+  <style>
+    :root { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color:#000000; background:#f8f7f4; }
+    * { box-sizing:border-box; }
+    body { margin:0; }
+    a { color:inherit; }
+    button,input { font:inherit; }
+    button { cursor:pointer; }
+    button:focus-visible,a:focus-visible,input:focus-visible { outline:3px solid #603d20; outline-offset:3px; }
+    .shell { max-width:1100px; margin:auto; padding:clamp(14px,3vw,34px); }
+    .header { position:relative; overflow:hidden; color:white; background:#000000; border-radius:18px; padding:clamp(20px,4vw,38px); }
+    .header button:focus-visible { outline-color:#fdb913; }
+    .header::after { content:""; position:absolute; width:270px; height:270px; border:52px solid #ffffff0b; border-radius:50%; top:-175px; right:-80px; pointer-events:none; }
+    .eyebrow { color:#fdb913; text-transform:uppercase; font-size:11px; font-weight:800; letter-spacing:.16em; }
+    h1 { margin:9px 0 8px; font-size:clamp(23px,3.7vw,36px); letter-spacing:-.04em; line-height:1.15; }
+    .sub { margin:0; max-width:670px; font-size:14px; line-height:1.55; color:#e6e6e6; }
+    .searchbox { margin-top:22px; position:relative; max-width:800px; }
+    .searchbox svg { position:absolute; left:15px; top:50%; transform:translateY(-50%); color:#5b6770; }
+    .searchbox input { width:100%; border:2px solid transparent; border-radius:12px; padding:16px 44px 16px 47px; background:white; color:#000000; outline-offset:2px; font-size:15px; }
+    .searchbox input:focus { border-color:#fdb913; outline:2px solid #fdb913; }
+    .clear { display:none; position:absolute; right:8px; top:50%; transform:translateY(-50%); border:0; background:#fff2ce; color:#603d20; width:31px; height:31px; border-radius:8px; }
+    .quick { display:flex; align-items:center; flex-wrap:wrap; gap:7px; margin-top:13px; }
+    .quick-label { font-size:12px; color:#e6e6e6; margin-right:4px; }
+    .quick button { border:1px solid #fdb913a6; color:#ffffff; background:#ffffff13; border-radius:100px; padding:6px 11px; font-size:12px; }
+    .quick button:hover { background:#ffffff27; }
+    .content { padding:26px 0 10px; }
+    .bar { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+    .section-title { margin:0; font-size:17px; letter-spacing:-.025em; }
+    .count { font-size:12px; color:#5b6770; }
+    .filters { display:flex; gap:7px; overflow-x:auto; padding:15px 1px 16px; scrollbar-width:thin; }
+    .filter { flex-shrink:0; border:1px solid #d9d5cc; color:#292929; background:#fff; padding:9px 13px; border-radius:9px; font-size:12px; font-weight:700; }
+    .filter:hover { border-color:#603d20; }
+    .filter[aria-pressed="true"] { color:#000000; background:#fdb913; border-color:#fdb913; }
+    .grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:13px; }
+    .card { display:flex; flex-direction:column; background:#fff; border:1px solid #e1ddd3; border-radius:13px; padding:19px; min-height:205px; box-shadow:0 2px 8px #00000007; transition:transform .16s,box-shadow .16s; }
+    .card:hover { transform:translateY(-2px); box-shadow:0 9px 22px #00000010; }
+    .card-top { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+    .icon { display:inline-flex; align-items:center; justify-content:center; border-radius:9px; width:36px; height:36px; background:#fff2ce; color:#603d20; font-size:19px; }
+    .pill { font-size:10px; font-weight:700; color:#603d20; background:#f8f1df; border-radius:100px; padding:5px 8px; text-align:right; }
+    .card h2 { font-size:16px; letter-spacing:-.025em; margin:13px 0 6px; line-height:1.3; }
+    .card p { font-size:12.5px; line-height:1.55; margin:0 0 16px; color:#5b6770; flex:1; }
+    .card a { font-size:12px; color:#603d20; font-weight:800; text-decoration:none; align-self:flex-start; }
+    .card a:hover, .card a:focus-visible { text-decoration:underline; }
+    .empty { padding:45px 20px; background:#fff; border:1px dashed #c9c1af; border-radius:12px; text-align:center; color:#5b6770; }
+    .empty strong { display:block; color:#000000; margin-bottom:8px; }
+    .reset { margin-top:13px; background:#fdb913; color:#000000; border:none; padding:9px 13px; border-radius:8px; }
+    .footer { border-top:1px solid #e1ddd3; margin-top:27px; padding:17px 1px 8px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; color:#5b6770; font-size:11px; line-height:1.6; }
+    .footer a { color:#603d20; font-weight:700; }
+    .note { background:#fff9e8; color:#603d20; border:1px solid #f0e5c7; border-radius:8px; padding:10px 13px; font-size:11px; margin-top:18px; }
+    @media (max-width:800px) { .grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+    @media (max-width:520px) { .shell { padding:10px; } .header { border-radius:12px; padding:20px 16px; } .grid { grid-template-columns:1fr; gap:10px; } .card { min-height:unset; padding:16px; } .quick-label { width:100%; } .content { padding-top:20px; } }
+    @media (prefers-reduced-motion:reduce) { .card { transition:none; } }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="header">
+      <div class="eyebrow">Harvey Mudd College · CIS</div>
+      <h1>Find the help you need.</h1>
+      <p class="sub">Search campus technology, teaching, and research services. Describe your task or browse a category to find the right HMC resource.</p>
+      <div class="searchbox">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m16 16 5 5"/></svg>
+        <label for="q" class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)">Search services</label>
+        <input id="q" type="search" autocomplete="off" placeholder="Try ‘record a lecture’ or ‘make a PDF accessible’" aria-controls="results">
+        <button class="clear" id="clear" aria-label="Clear search" type="button">×</button>
+      </div>
+      <div class="quick" aria-label="Suggested searches"><span class="quick-label">Try searching:</span><button data-query="record lecture">Record a lecture</button><button data-query="grade assignments">Grade assignments</button><button data-query="accessible PDF">Accessible PDF</button><button data-query="AI tools">AI tools</button></div>
+    </header>
+    <section class="content" aria-label="Service directory">
+      <div class="bar"><h2 class="section-title">Explore services</h2><span class="count" id="count" role="status" aria-live="polite"></span></div>
+      <div class="filters" id="filters" role="group" aria-label="Filter by category"></div>
+      <div class="grid" id="results"></div>
+      <div class="note">Prototype directory · Descriptions are brief summaries, not official service policies. Follow each service link for current eligibility, instructions, and support details.</div>
+    </section>
+    <footer class="footer"><span>Independent prototype for HMC Pathify · No sign-in, analytics, or AI API</span><span>Source: <a href="https://www.hmc.edu/cis/services/" target="_blank" rel="noopener noreferrer">Official CIS Services A–Z ↗</a> · <a href="https://www.hmc.edu/cis/services/cis-services-by-category/" target="_blank" rel="noopener noreferrer">Official categories ↗</a></span></footer>
+  </main>
+  <script>
+    'use strict';
+    // Curated links verified against the HMC CIS service catalog on 2026-11-18.
+    // Category names below are practical, faculty/staff-oriented groupings for this widget.
+    const base='https://www.hmc.edu/cis/services/';
+    const services=[
+      ['Canvas Support','Teaching & Learning','Help with Canvas course sites, course tools, accounts, and faculty training.','canvas lms course setup assignments learning management system teach instructor', 'canvas-support/','▦'],
+      ['Gradescope','Teaching & Learning','Support for the Gradescope assessment and grading platform.','grading grade assignments exams rubric submissions assessments', 'gradescope/','✓'],
+      ['Gradescope Sync','Teaching & Learning','Information on connecting and synchronizing Gradescope with course systems.','roster sync canvas grading students enrollments', 'gradescope-sync/','⇄'],
+      ['Lecture Capture','Teaching & Learning','Explore options for recording lectures and making recordings available to students.','record lecture recording video class capture livestream', 'lecture-capture/','◉'],
+      ['Classroom Technologies','Teaching & Learning','Information about classroom audiovisual equipment, projection, and related support.','classroom projector hdmi audiovisual av equipment lecture room', 'classroom-technologies-2016/','▣'],
+      ['Lightboard','Teaching & Learning','Learn about using a lightboard for instructional video creation.','teaching video presentation recording whiteboard', 'lightboard/','✎'],
+      ['Trainings, Workshops and Seminars','Teaching & Learning','Find CIS training, workshops, and learning opportunities.','faculty development learn workshop training seminar', 'trainings-workshops-seminars/','◇'],
+      ['Web and Document Accessibility Consulting','Accessibility','Consult on accessible websites and documents, including teaching materials.','accessible accessibility pdf word powerpoint document alt text screen reader wcag', 'web-and-document-accessibility-consulting/','♿'],
+      ['Google Gemini for Education','AI & Productivity','Official HMC service information for Google Gemini for Education.','ai tools artificial intelligence gemini chatbot google', 'gemini-for-education/','✧'],
+      ['Microsoft Copilot','AI & Productivity','Official CIS information for Microsoft Copilot.','ai tools artificial intelligence assistant copilot microsoft', 'microsoft-copilot/','✧'],
+      ['NotebookLM','AI & Productivity','Official CIS information for Google NotebookLM.','ai tools artificial intelligence research notes sources notebooklm google', 'notebooklm/','✧'],
+      ['Online Form Builders','AI & Productivity','Explore supported online form-building tools and guidance.','survey forms intake questionnaires kuali form', 'online-form-builders/','☷'],
+      ['Zoom','Collaboration','Find information about Zoom for meetings and remote collaboration.','meeting online video conferencing webinar virtual', 'zoom/','▤'],
+      ['Google Drive: My Drive and Shared Drive','Collaboration','Information about storing, organizing, and sharing files in Google Drive.','files documents storage sharing cloud google shared drive', '../google-drive-my-drive-and-team-drive/','☁'],
+      ['Data Management Plan (DMP)','Research Computing','Support for preparing research data management plans.','research grant data management plan dmp proposal', 'data-management-plan-dmp-support/','◈'],
+      ['Research Computing Support','Research Computing','Find computing support and resources for HMC research activities.','research computation scientific software analysis faculty', 'research-computing-support/','⌘'],
+      ['High Performance Computing Support','Research Computing','Support information for high-performance computing resources.','hpc cluster computing simulation research', 'high-performance-computing-support/','▥'],
+      ['Laptop Cart Reservation','Equipment & AV','Learn how to reserve laptops for instructional or campus needs.','borrow laptop computers cart classroom reserve equipment', 'laptop-cart-reservation/','▣'],
+      ['Loaner Program','Equipment & AV','Find information on requesting temporary loaner equipment.','borrow laptop device computer equipment loan temporary', 'loaner-program/','▣'],
+      ['Audiovisual Event Support','Equipment & AV','Request information about AV support for campus events.','event microphone sound projector audiovisual av presentation', 'audiovisual-event-support/','◉'],
+      ['VPN','Accounts & Security','Learn about remote access to HMC network resources.','remote access home secure network vpn connect', 'vpn/','⌁'],
+      ['Wireless Networks','Accounts & Security','Guidance and support for HMC wireless network connections.','wifi wi-fi internet network wireless connection', 'wireless-networks/','⌁'],
+      ['Duo Two-Factor Authentication','Accounts & Security','Information about Duo multi-factor authentication for HMC accounts.','mfa 2fa login security sign in authentication phone', '../duo-two-factor-authentication/','⚿'],
+      ['Password and Account Management Kiosk','Accounts & Security','Find account and password-management information.','password reset account login credentials forgot', 'password-and-account-management-kiosk/','⚿']
+    ].map(([name,category,description,keywords,path,icon])=>({name,category,description,keywords,url:base+path,icon}));
+    const categories=['All services','Teaching & Learning','Accessibility','AI & Productivity','Collaboration','Research Computing','Equipment & AV','Accounts & Security'];
+    const input=document.getElementById('q'), filters=document.getElementById('filters'), results=document.getElementById('results'), count=document.getElementById('count'), clear=document.getElementById('clear');
+    let selected='All services';
+    const normalize=s=>s.toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,' ').trim();
+    const synonyms={record:['lecture capture','video','recording'],grading:['gradescope','grade'],grade:['gradescope','grading'],pdf:['accessibility','document'],accessible:['accessibility'],ai:['gemini','copilot','notebooklm'],wifi:['wireless'],password:['credentials','account'],borrow:['loaner','laptop'],rubric:['gradescope'],meeting:['zoom'],survey:['forms']};
+    function matches(service,query){
+      const tokens=normalize(query).split(/\s+/).filter(Boolean);if(!tokens.length)return true;
+      const hay=normalize([service.name,service.description,service.category,service.keywords].join(' '));
+      return tokens.every(token=>hay.includes(token)||((synonyms[token]||[]).some(term=>hay.includes(term))));
+    }
+    function draw(){
+      const query=input.value;
+      clear.style.display=query?'block':'none';
+      filters.innerHTML='';
+      for(const category of categories){const b=document.createElement('button');b.type='button';b.className='filter';b.textContent=category;b.setAttribute('aria-pressed',String(selected===category));b.addEventListener('click',()=>{selected=category;draw();});filters.append(b);}
+      const found=services.filter(s=>(selected==='All services'||s.category===selected)&&matches(s,query));
+      count.textContent=`${found.length} of ${services.length} services`;
+      results.innerHTML='';
+      if(!found.length){const e=document.createElement('div');e.className='empty';e.style.gridColumn='1 / -1';e.innerHTML='<strong>No matching services found</strong>Try another phrase or clear the category filter.';const b=document.createElement('button');b.className='reset';b.textContent='Show all services';b.addEventListener('click',()=>{input.value='';selected='All services';draw();input.focus();});e.append(b);results.append(e);return;}
+      for(const s of found){
+        const article=document.createElement('article');article.className='card';
+        const top=document.createElement('div');top.className='card-top';
+        const icon=document.createElement('span');icon.className='icon';icon.setAttribute('aria-hidden','true');icon.textContent=s.icon;
+        const pill=document.createElement('span');pill.className='pill';pill.textContent=s.category;top.append(icon,pill);
+        const h=document.createElement('h2');h.textContent=s.name;
+        const p=document.createElement('p');p.textContent=s.description;
+        const a=document.createElement('a');a.href=s.url;a.target='_blank';a.rel='noopener noreferrer';a.textContent='View official service ↗';a.setAttribute('aria-label',`View official HMC page for ${s.name} (opens in new tab)`);
+        article.append(top,h,p,a);results.append(article);
+      }
+    }
+    input.addEventListener('input',draw);
+    clear.addEventListener('click',()=>{input.value='';draw();input.focus();});
+    document.querySelectorAll('[data-query]').forEach(b=>b.addEventListener('click',()=>{input.value=b.dataset.query;selected='All services';draw();input.focus();}));
+    draw();
+  </script>
+</body>
+</html>
