@@ -4,13 +4,16 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light">
-  <title>HMC CIS/ARCS Service Finder — Prototype</title>
+  <title>HMC Campus Service Finder — Prototype</title>
   <style>
     :root { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color:#000000; background:#f8f7f4; }
     * { box-sizing:border-box; }
     body { margin:0; }
     a { color:inherit; }
-    button,input { font:inherit; }
+    button,input,select { font:inherit; }
+    select { max-width:100%; border:1px solid #a59a88; border-radius:8px; padding:8px; color:#000; background:#fff; }
+    select:focus-visible { outline:3px solid #603d20; outline-offset:3px; }
+    .department-filter { display:flex; align-items:center; flex-wrap:wrap; gap:8px; margin-top:14px; font-size:13px; }
     button { cursor:pointer; }
     button:focus-visible,a:focus-visible,input:focus-visible { outline:3px solid #603d20; outline-offset:3px; }
     .shell { max-width:1100px; margin:auto; padding:clamp(14px,3vw,34px); }
@@ -52,6 +55,8 @@
     .reset { margin-top:13px; background:#fdb913; color:#000000; border:none; padding:9px 13px; border-radius:8px; }
     .footer { border-top:1px solid #e1ddd3; margin-top:27px; padding:17px 1px 8px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; color:#5b6770; font-size:11px; line-height:1.6; }
     .footer a { color:#603d20; font-weight:700; }
+    .browse-actions { display:flex; align-items:center; flex-wrap:wrap; gap:12px; margin-top:16px; font-size:13px; }
+    .browse-actions a { color:#603d20; }
     .note { background:#fff9e8; color:#603d20; border:1px solid #f0e5c7; border-radius:8px; padding:10px 13px; font-size:11px; margin-top:18px; }
     @media (max-width:800px) { .grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
     @media (max-width:520px) { .shell { padding:10px; } .header { border-radius:12px; padding:20px 16px; } .grid { grid-template-columns:1fr; gap:10px; } .card { min-height:unset; padding:16px; } .quick-label { width:100%; } .content { padding-top:20px; } }
@@ -61,24 +66,34 @@
 <body>
   <main class="shell">
     <header class="header">
-      <div class="eyebrow">Harvey Mudd College · CIS</div>
-      <h1>Find the help you need.</h1>
-      <p class="sub">Search campus technology, teaching, and research services. Describe your task or browse a category to find the right HMC resource.</p>
+      <div class="eyebrow">Harvey Mudd College</div>
+      <h1>Campus Service Finder</h1>
+      <p class="sub">Find campus services and resources for HMC faculty and staff. Search by task or browse by department.</p>
       <div class="searchbox">
         <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m16 16 5 5"/></svg>
         <label for="q" class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)">Search services</label>
-        <input id="q" type="search" autocomplete="off" placeholder="Try ‘record a lecture’ or ‘make a PDF accessible’" aria-controls="results">
+        <input id="q" type="search" autocomplete="off" placeholder="Try ‘course reserves’ or ‘expense report’" aria-controls="results">
         <button class="clear" id="clear" aria-label="Clear search" type="button">×</button>
       </div>
-      <div class="quick" aria-label="Suggested searches"><span class="quick-label">Try searching:</span><button data-query="record lecture">Record a lecture</button><button data-query="grade assignments">Grade assignments</button><button data-query="accessible PDF">Accessible PDF</button><button data-query="AI tools">AI tools</button></div>
+      <div class="quick" aria-label="Suggested searches"><span class="quick-label">Try searching:</span><button data-query="grant proposal">Submit a grant proposal</button><button data-query="broken light">Report a broken light</button><button data-query="course reserves">Set up course reserves</button><button data-query="reimbursement">Submit a reimbursement</button></div>
     </header>
     <section class="content" aria-label="Service directory">
       <div class="bar"><h2 class="section-title">Explore services</h2><span class="count" id="count" role="status" aria-live="polite"></span></div>
+      <div class="department-filter">
+        <label for="department">Department</label>
+        <select id="department">
+          <option value="">All departments</option>
+        </select>
+      </div>
       <div class="filters" id="filters" role="group" aria-label="Filter by category"></div>
       <div class="grid" id="results"></div>
+      <div class="browse-actions">
+        <button class="filter" id="more" type="button" hidden>Show more services</button>
+        <a id="website-search" target="_blank" rel="noopener noreferrer" hidden>Search hmc.edu with Google ↗</a>
+      </div>
       <div class="note">Prototype directory · Descriptions are brief summaries, not official service policies. Follow each service link for current eligibility, instructions, and support details.</div>
     </section>
-    <footer class="footer"><span>Independent prototype for HMC Pathify · No sign-in, analytics, or AI API</span><span>Source: <a href="https://www.hmc.edu/cis/services/" target="_blank" rel="noopener noreferrer">Official CIS Services A–Z ↗</a> · <a href="https://www.hmc.edu/cis/services/cis-services-by-category/" target="_blank" rel="noopener noreferrer">Official categories ↗</a></span></footer>
+    <footer class="footer"><span>Independent prototype for HMC Pathify · No sign-in, analytics, or AI API</span><span>Sources: <a href="https://www.hmc.edu/resources/faculty-staff/" target="_blank" rel="noopener noreferrer">Faculty and Staff Resources ↗</a> · <a href="https://www.hmc.edu/resources/" target="_blank" rel="noopener noreferrer">HMC Resources A–Z ↗</a> · <a href="https://www.hmc.edu/cis/services/" target="_blank" rel="noopener noreferrer">CIS ↗</a> · <a href="https://www.hmc.edu/facilities-maintenance/" target="_blank" rel="noopener noreferrer">Facilities and Maintenance ↗</a> · <a href="https://www.hmc.edu/facilities-maintenance/work-orders/" target="_blank" rel="noopener noreferrer">Work Order Requests ↗</a> · <a href="https://www.hmc.edu/human-resources/" target="_blank" rel="noopener noreferrer">Human Resources ↗</a></span></footer>
   </main>
   <script>
     'use strict';
@@ -110,40 +125,332 @@
       ['Wireless Networks','Accounts & Security','Guidance and support for HMC wireless network connections.','wifi wi-fi internet network wireless connection', 'wireless-networks/','⌁'],
       ['Duo Two-Factor Authentication','Accounts & Security','Information about Duo multi-factor authentication for HMC accounts.','mfa 2fa login security sign in authentication phone', '../duo-two-factor-authentication/','⚿'],
       ['Password and Account Management Kiosk','Accounts & Security','Find account and password-management information.','password reset account login credentials forgot', 'password-and-account-management-kiosk/','⚿']
-    ].map(([name,category,description,keywords,path,icon])=>({name,category,description,keywords,url:base+path,icon}));
-    const categories=['All services','Teaching & Learning','Accessibility','AI & Productivity','Collaboration','Research Computing','Equipment & AV','Accounts & Security'];
+    ].map(([name,category,description,keywords,path,icon])=>({name,category,description,keywords,url:new URL(path, base).href,icon,department:'CIS'}));
+    // Each row is [name, category, description, search keywords, official URL, icon].
+    const campusServices = [
+      ["Contact Facilities and Maintenance", "Facilities services", "Find Facilities and Maintenance contact information and service hours.", "facilities office email phone contact building grounds", "https://www.hmc.edu/facilities-maintenance/", "⌂"],
+      ["Meet the Facilities and Maintenance Team", "Facilities services", "Find Facilities staff and contacts.", "staff directory contact", "https://www.hmc.edu/facilities-maintenance/staff/", "⌂"],
+      ["Submit a Work Order Request", "Facilities services", "Use the official instructions and submission link for routine requests. HMC lists a registered computer, HMC email and connection to its campus network as requirements.", "asset essentials workorder service ticket request building maintenance", "https://www.hmc.edu/facilities-maintenance/work-orders/", "⌂"],
+      ["Repair or Maintain a Campus Space", "Facilities services", "Request a routine building, equipment or grounds repair through a work order.", "report broken light lights bulb leak water leaking hvac air conditioning ac heating room too cold hot plumbing toilet sink door repair fix", "https://www.hmc.edu/facilities-maintenance/work-orders/", "⌂"],
+      ["Request Custodial Cleaning", "Facilities services", "Use a work order to request campus custodial service.", "clean spill dirty room restroom janitorial custodial housekeeping", "https://www.hmc.edu/facilities-maintenance/work-orders/", "⌂"],
+      ["Request a Small Renovation", "Facilities services", "Find the renovation form linked from Facilities for changes to campus space.", "renovate remodel alteration building space construction project", "https://www.hmc.edu/facilities-maintenance/", "⌂"],
+      ["Renovation Request Form (PDF)", "Facilities services", "Open the renovation request form published by Facilities.", "renovate remodel construction project form", "https://www.hmc.edu/facilities-maintenance/wp-content/uploads/sites/17/2018/07/HMC-FM-Renovation-Request-Fillable.pdf", "⌂"],
+      ["Request Digital Signage Installation", "Facilities services", "Start a Facilities work order for digital signage installation.", "display screen monitor sign install", "https://www.hmc.edu/facilities-maintenance/work-orders/", "⌂"],
+      ["Request Help with a Small Move", "Facilities services", "Use a work order to request help moving one or two boxes.", "move box boxes moving relocation", "https://www.hmc.edu/facilities-maintenance/work-orders/", "⌂"],
+      ["Request a Safety Inspection", "Facilities services", "Use a Facilities work order to request a routine safety inspection.", "inspect assess facility building safety testing", "https://www.hmc.edu/facilities-maintenance/work-orders/", "⌂"],
+      ["Request Waste Disposal", "Facilities services", "Use a Facilities work order to ask for waste removal.", "trash garbage rubbish bins pickup disposal", "https://www.hmc.edu/facilities-maintenance/work-orders/", "⌂"],
+      ["Request Pest Control", "Facilities services", "Use a Facilities work order to request pest control.", "ants rodents mouse mice bugs insects cockroach exterminator", "https://www.hmc.edu/facilities-maintenance/work-orders/", "⌂"],
+      ["Lost and Found", "Facilities services", "See Facilities’ service information and work-order guidance for lost and found.", "lost found missing item belongings", "https://www.hmc.edu/facilities-maintenance/work-orders/", "⌂"],
+      ["Plan a Large Renovation or Capital Project", "Facilities services", "Find the Facilities contact for major renovations and capital projects on the department page.", "construction building capital projects remodel", "https://www.hmc.edu/facilities-maintenance/", "⌂"],
+      ["Request Painting or Furniture Assistance", "Facilities services", "Ask Facilities about coordinating painting or furniture delivery, acceptance or assembly.", "paint walls chair desk installation delivery assemble", "https://www.hmc.edu/facilities-maintenance/", "⌂"],
+      ["Request an Office or Heavy Move", "Facilities services", "Ask Facilities about coordinating an office move or moving heavy items.", "furniture boxes equipment relocation movers", "https://www.hmc.edu/facilities-maintenance/", "⌂"],
+      ["Request Safety Training, Design or Testing Support", "Facilities services", "Ask Facilities about coordinating outside support for safety training, design, inspection or testing.", "vendor consultant design testing inspection safety training", "https://www.hmc.edu/facilities-maintenance/", "⌂"],
+      ["Conferences and Events", "Facilities services", "Find HMC information for planning conferences and events.", "conference event venue campus facilities", "https://www.hmc.edu/facilities-maintenance/conferences-and-events/", "⌂"],
+      ["Reserve a Room in EMS", "Facilities services", "Open the Event Management System linked by HMC for space requests.", "reserve book room meeting venue campus event space ems", "https://emsweb.claremont.edu/hmc/", "⌂"],
+      ["Campus Parking", "Facilities services", "Find parking information for the HMC community.", "parking permit visitor car vehicle lot", "https://www.hmc.edu/facilities-maintenance/parking/", "⌂"],
+      ["Recycling Guide", "Facilities services", "Find guidance on sorting recyclable materials on campus.", "recycle waste sorting trash bin", "https://www.hmc.edu/facilities-maintenance/recycling-guide/", "⌂"],
+      ["Share Feedback with Facilities", "Facilities services", "Open the Facilities feedback page.", "comment feedback suggestion complaint", "https://www.hmc.edu/facilities-maintenance/share-your-comments/", "⌂"],
+      ["Campus Sustainability", "Facilities services", "Explore sustainability information from Facilities.", "green energy environment campus sustainability", "https://www.hmc.edu/facilities-maintenance/sustainability-on-campus/", "⌂"],
+      ["Vendor Insurance Requirements", "Facilities services", "Find Facilities insurance requirements for vendors.", "contractor certificate insurance coi", "https://www.hmc.edu/facilities-maintenance/vendor-insurance-requirements/", "⌂"],
+      ["Video Surveillance", "Facilities services", "Find the College’s video surveillance information from Facilities.", "camera cctv security", "https://www.hmc.edu/facilities-maintenance/video-surveillance/", "⌂"],
+      ["Key and Card Access", "Facilities services", "Read Facilities information about keys and card access.", "building door access swipe badge lock keycard", "https://www.hmc.edu/facilities-maintenance/key-card-access/", "⌂"],
+      ["Request a Key or Access Card", "Facilities services", "Open the official key/card request form page.", "request keys keycard card badge door building access", "https://www.hmc.edu/facilities-maintenance/key-card-access/key-request-form/", "⌂"],
+      ["Report a Sprinkler Problem", "Facilities services", "Use the sprinkler reporting link under Service Requests on the Facilities page.", "irrigation lawn sprinkler broken leak grounds", "https://www.hmc.edu/facilities-maintenance/", "⌂"],
+      ["College Vehicle Procedures", "Facilities services", "Find the College’s procedures for campus vehicles.", "fleet van car vehicle use trip", "https://www.hmc.edu/facilities-maintenance/college-vehicle-procedures/", "⌂"],
+      ["Student Facilities Resources", "Facilities services", "Find Facilities information for students and residence halls.", "dorm residence housing student", "https://www.hmc.edu/facilities-maintenance/dorm-resources/", "⌂"],
+      ["Dorm Damage Charges", "Facilities services", "Find information about residence hall damage charges.", "dorm room damage charge fee", "https://www.hmc.edu/facilities-maintenance/dorm-resources/dorm-damage-charges/", "⌂"],
+      ["Summer Storage FAQ", "Facilities services", "Read Facilities’ summer storage information.", "summer boxes move break store storage dorm", "https://www.hmc.edu/facilities-maintenance/dorm-resources/summer-storage/", "⌂"],
+      ["Summer Housing", "Facilities services", "Find the Facilities information page for summer housing.", "summer housing residence dorm room", "https://www.hmc.edu/facilities-maintenance/dorm-resources/summer-housing/", "⌂"],
+      ["Facilities FAQ", "Facilities services", "Find answers to common Facilities questions for students.", "dorm residence hall facilities frequently asked questions", "https://www.hmc.edu/facilities-maintenance/dorm-resources/frequently-asked-questions-faqs/", "⌂"],
+      ["Check a Work Order or Get Urgent Help", "Facilities services", "Use the official work-order page for status inquiries and urgent or emergency contact instructions.", "track ticket work order status emergency urgent after hours", "https://www.hmc.edu/facilities-maintenance/work-orders/", "⌂"],
+      ["Contact Human Resources", "HR services", "Get help with employment questions and find HR office contact details.", "hr office email phone help", "https://www.hmc.edu/human-resources/", "◇"],
+      ["Meet the Human Resources Team", "HR services", "Find HR staff and their areas of responsibility.", "hr staff directory contact", "https://www.hmc.edu/human-resources/human-resources-staff/", "◇"],
+      ["HR Vision, Mission and Values", "HR services", "Read about the HR office’s mission and commitments.", "human resource goals", "https://www.hmc.edu/human-resources/human-resource-vision-mission-and-values/", "◇"],
+      ["Employee Benefits", "Benefits", "Explore employee benefit programs.", "health insurance medical dental vision retirement enrollment", "https://www.hmc.edu/human-resources/benefits/", "◇"],
+      ["Benefits Contacts", "Benefits", "Find the appropriate contact for a benefits question.", "insurance health plan phone email", "https://www.hmc.edu/human-resources/benefits/benefits-contacts/", "◇"],
+      ["Dependent Collegiate Scholarship Program", "Benefits", "Find information about the scholarship program for eligible dependents.", "tuition college children child", "https://www.hmc.edu/human-resources/benefits/dependent-collegiate-scholarship/", "◇"],
+      ["Employee Assistance Program", "Benefits", "Find confidential employee assistance resources.", "eap counseling wellbeing mental health support", "https://www.hmc.edu/human-resources/benefits/employee-assistance-program/", "◇"],
+      ["Holiday Schedule and Campus Closures", "Benefits", "Check the College’s holiday and closure calendar.", "paid holiday winter break christmas days off", "https://www.hmc.edu/human-resources/benefits/holiday-schedule/", "◇"],
+      ["Rideshare Incentive Program", "Benefits", "Learn about incentives for eligible commuting options.", "carpool commute transit bike bus", "https://www.hmc.edu/human-resources/benefits/rideshare-incentive-program/", "◇"],
+      ["TCCS Benefits Administration", "Benefits", "Visit The Claremont Colleges Services benefits office.", "insurance benefits administrator tccs", "https://services.claremont.edu/benefits-administration/", "◇"],
+      ["TIAA Services", "Benefits", "Find TIAA retirement resources and counseling information.", "retirement 403b investment", "https://www.hmc.edu/human-resources/benefits/tiaa-cref-individual-counseling-sessions/", "◇"],
+      ["Employment at Harvey Mudd", "Hiring & employment", "Find job opportunities and information about working at HMC.", "apply jobs careers opening vacancy", "https://www.hmc.edu/human-resources/employment-at-harvey-mudd/", "◇"],
+      ["Employment Application FAQ", "Hiring & employment", "Find answers to common questions about applying for HMC jobs.", "apply job candidate applicant questions", "https://www.hmc.edu/human-resources/employment-at-harvey-mudd/frequently-asked-questions/", "◇"],
+      ["HMC Faculty Immigration Resources", "Hiring & employment", "Find HMC immigration resources for faculty.", "faculty visa international immigration", "https://www.hmc.edu/human-resources/hmc-faculty-immigration-resources/", "◇"],
+      ["Employment at Other Claremont Colleges", "Hiring & employment", "Find job listings at other Claremont Colleges.", "consortium jobs careers apply", "https://www.hmc.edu/human-resources/employment-at-harvey-mudd/employment-at-other-claremont-colleges/", "◇"],
+      ["Title IX Disclosure", "Hiring & employment", "Read the Title IX disclosure listed under employment resources.", "title nine employment disclosure", "https://www.hmc.edu/human-resources/employment-at-harvey-mudd/title-ix-disclosure/", "◇"],
+      ["HR Programs for Staff", "HR services", "Explore HR programs available to staff.", "staff engagement events recognition", "https://www.hmc.edu/human-resources/hr-programs-for-staff/", "◇"],
+      ["Amplifying Staff Voices", "HR services", "Learn about the Amplifying Staff Voices initiative.", "staff feedback engagement", "https://www.hmc.edu/human-resources/amplifying-staff-voices/", "◇"],
+      ["Human Resources Forms", "HR services", "Browse the forms published by Human Resources.", "hr paperwork download document", "https://www.hmc.edu/human-resources/human-resources-forms/", "◇"],
+      ["Driver Authorization for Staff and Faculty", "HR services", "Find instructions for obtaining College driver authorization.", "driving approval license vehicle rental", "https://www.hmc.edu/human-resources/driver-authorization-for-staff-and-faculty/", "◇"],
+      ["Payroll and Timekeeping", "Payroll & Workday", "Find payroll and timekeeping information and resources.", "timesheet time sheet time entry pay schedule paycheck hours workday", "https://www.hmc.edu/human-resources/payroll-and-timekeeping/", "◇"],
+      ["Performance Management Program", "HR services", "Find resources and forms for the staff performance review process.", "performance evaluation appraisal self evaluation goals review", "https://www.hmc.edu/human-resources/performance-evaluation-forms-and-resources/", "◇"],
+      ["Employee Handbook and Policies", "HR policies", "Browse the employee handbook and HR policies and procedures.", "staff handbook workplace rules policy", "https://www.hmc.edu/human-resources/policies-procedures-and-guidelines/", "◇"],
+      ["Employee Handbook in Spanish", "HR policies", "Access the Spanish-language employee handbook.", "manual del empleado español staff handbook", "https://www.hmc.edu/human-resources/staff-handbook-spanish-manual-para-el-personal/", "◇"],
+      ["COVID-19 Policy and Resources", "HR policies", "Read HMC’s COVID-19 workplace resources.", "covid coronavirus", "https://www.hmc.edu/human-resources/policies-procedures-and-guidelines/covid-19-policies-and-resources/", "◇"],
+      ["Disability Accommodations Policy", "HR policies", "Find the College’s employee accommodation policy.", "ada accessibility disability accommodation workplace", "https://www.hmc.edu/human-resources/policies-procedures-and-guidelines/disability-accommodations-policy/", "◇"],
+      ["Drug-Free Workplace Policy", "HR policies", "Read the College’s drug-free workplace policy.", "alcohol substance workplace", "https://www.hmc.edu/human-resources/policies-procedures-and-guidelines/drug-free-workplace-policy-2/", "◇"],
+      ["Equal Opportunity and Nondiscrimination Statement", "HR policies", "Review HMC’s equal opportunity and nondiscrimination statement.", "eeo discrimination equity", "https://www.hmc.edu/human-resources/policies-procedures-and-guidelines/equal-opportunity-and-nondiscrimination-statement/", "◇"],
+      ["General Safety Information", "HR policies", "Find general safety information published by HR.", "workplace safety", "https://www.hmc.edu/human-resources/policies-procedures-and-guidelines/general-safety-information/", "◇"],
+      ["Guidelines on Accepting Volunteer Services", "HR policies", "Review the College’s guidance on accepting volunteer services.", "volunteer waiver", "https://www.hmc.edu/human-resources/guidelines-on-accepting-volunteer-services/", "◇"],
+      ["Electronic and Information Technology Accessibility Policy", "HR policies", "Read HMC’s accessibility policy for electronic and information technology.", "eit digital accessibility web policy", "https://www.hmc.edu/human-resources/policies-procedures-and-guidelines/hmc-policy-on-electronic-and-information-technology-accessibility/", "◇"],
+      ["Staff Remote Work Program", "HR policies", "Read the staff remote work policy and procedures.", "telework telecommute hybrid work from home", "https://www.hmc.edu/human-resources/policies-procedures-and-guidelines/telecommuting-policy/", "◇"],
+      ["Known Friable and Non-Friable Asbestos", "HR policies", "Find the College’s information about known asbestos.", "building materials workplace safety", "https://www.hmc.edu/human-resources/policies-procedures-and-guidelines/known-friable-and-non-friable-asbestos/", "◇"],
+      ["Maintenance Employee On-Call and Call-Back Policy", "HR policies", "Review the policy that applies to maintenance employees.", "on call callback shift facilities", "https://www.hmc.edu/human-resources/policies-procedures-and-guidelines/on-call-and-call-back-policy-for-maintenance-employees/", "◇"],
+      ["Discrimination, Harassment and Retaliation Policy", "HR policies", "Read the College policy on prohibited discrimination, harassment and retaliation.", "report harassment discrimination retaliation", "https://www.hmc.edu/human-resources/policies-procedures-and-guidelines/prohibited-discrimination-harassment-and-retaliation/", "◇"],
+      ["Professional Development Resources", "HR services", "Explore staff learning programs and training resources.", "chart your course career growth training workshop", "https://www.hmc.edu/human-resources/training-resources/", "◇"],
+      ["Recruitment and Hiring Resources", "Hiring & employment", "Find recruitment resources for supervisors. This HMC page is password-protected.", "hire recruit job posting search committee", "https://www.hmc.edu/human-resources/supervisors-toolkit/hiring-and-recruitment-resources/", "◇"],
+      ["Supervisor’s Toolkit", "Hiring & employment", "Find HR resources for supervisors. This HMC page is password-protected.", "manager supervisor toolkit", "https://www.hmc.edu/human-resources/supervisors-toolkit/", "◇"],
+      ["Get Started with Recruitment", "Hiring & employment", "Find guidance for starting the recruitment process. This HMC page is password-protected.", "hire recruit position vacancy", "https://www.hmc.edu/human-resources/supervisors-toolkit/hiring-and-recruitment-resources/getting-started-with-the-recruitment-process/", "◇"],
+      ["Manage a Position in Workday", "Hiring & employment", "Find guidance for managing a position in Workday. This HMC page is password-protected.", "recruit job posting requisition hire", "https://www.hmc.edu/human-resources/supervisors-toolkit/hiring-and-recruitment-resources/posting-the-position-on-peopleadmin/", "◇"],
+      ["Interviewing and Reference Checks", "Hiring & employment", "Find supervisor guidance for interviews and reference checks. This HMC page is password-protected.", "candidate screening recruitment hiring", "https://www.hmc.edu/human-resources/supervisors-toolkit/hiring-and-recruitment-resources/the-selection-process/", "◇"],
+      ["Make a Job Offer and Plan Next Steps", "Hiring & employment", "Find guidance for supervisors at the offer stage. This HMC page is password-protected.", "recruitment offer hiring onboarding", "https://www.hmc.edu/human-resources/position-filled-next-steps/", "◇"],
+      ["Student Employment", "Hiring & employment", "Find information about student jobs and employment at HMC.", "student employee campus job hiring", "https://www.hmc.edu/human-resources/student-employment/", "◇"],
+      ["Student Employment Resources for Supervisors", "Hiring & employment", "Find resources for supervisors of student employees. This HMC page is password-protected.", "student worker hire supervisor manager", "https://www.hmc.edu/human-resources/resources-for-supervisors/", "◇"],
+      ["Henry T. Mudd Prize", "HR services", "Find information about the Henry T. Mudd Prize.", "award recognition nomination", "https://www.hmc.edu/human-resources/henry-t-mudd-prize/", "◇"],
+      ["Mary G. Binder Prize", "HR services", "Find information about the Mary G. Binder Prize.", "award recognition nomination", "https://www.hmc.edu/human-resources/the-mary-g-binder-prize/", "◇"],
+      ["Workday Employee Self-Service", "Payroll & Workday", "Open HMC’s Workday information page for sign-in and employee job aids.", "workday payslip w2 w 2 tax withholding direct deposit personal information benefits compensation", "https://www.hmc.edu/human-resources/workday-hris/", "◇"],
+      ["Innovation Accelerator Grants", "HR services", "Find guidelines and procedures linked from the HR homepage.", "innovation accelerator ia grant laboratory", "https://www.hmc.edu/dco/innovation-accelerator-ia-laboratory-grants-frequently-asked-questions-for-business-processes/", "◇"],
+      ["How to Submit a Work Order (PDF)", "Facilities services", "Open the work-order walkthrough linked from the HMC instructions page.", "work order guide instructions pdf asset essentials", "https://drive.google.com/file/d/16POH76qqPeP6TnDq5P7VBWQ1_8GAax4e/view?usp=sharing", "⌂"],
+      ["Request Event AV Setup", "Facilities services", "Open the audiovisual setup form linked from HMC’s Work Order Requests page.", "av microphone speaker projector event setup kuali", "https://hmc.kualibuild.com/app/64791a1f349df80208a9be0b/start", "⌂"],
+      ["Submit a Work Order with the Mobile App (PDF)", "Facilities services", "Open HMC’s guide to submitting a request in Asset Essentials on mobile.", "work order mobile app asset essentials ios android", "https://drive.google.com/file/d/16Pc8udwN5kjqB4eSWk_v33lyVBOFxY57/view?usp=sharing", "⌂"]
+    ].map(([name,category,description,keywords,url,icon]) => ({
+      name,category,description,keywords,url,icon,
+      department:category === 'Facilities services' ? 'Facilities and Maintenance' : 'Human Resources'
+    }));
+    const departmentServices = [
+      ["Financial Affairs", "Finance & purchasing", "Submit a Reimbursement in Workday", "Open HMC’s Workday Financials job aids and look under Expenses for the expense report instructions.", "expense report travel reimbursement reimburse receipt workday", "https://www.hmc.edu/dco/workday-financials/forms-and-job-aids/"],
+      ["Financial Affairs", "Finance & purchasing", "Contact Financial Affairs", "Find the office responsible for College financial operations.", "finance business affairs accounting controller", "https://www.hmc.edu/dco/financial-affairs/"],
+      ["Financial Affairs", "Finance & purchasing", "Financial Forms and Policies", "Find College finance forms and policies.", "purchase expense travel reimbursement vendor", "https://www.hmc.edu/dco/financial-affairs/forms-and-policies/"],
+      ["Financial Affairs", "Finance & purchasing", "Order Office Supplies", "Find purchasing information for the College’s Office Depot program.", "office depot buy paper supplies", "https://www.hmc.edu/dco/financial-affairs/forms-and-policies/office-depot/"],
+      ["Financial Affairs", "Finance & purchasing", "Purchase Card Program", "Find guidance for College-issued purchase cards.", "pcard p card procurement purchasing credit card", "https://www.hmc.edu/dco/financial-affairs/forms-and-policies/purchase-card-program/"],
+      ["Financial Affairs", "Finance & purchasing", "Workday Financials", "Find the College’s finance system and help resources.", "workday invoice procurement budget vendor payment", "https://www.hmc.edu/dco/workday-financials/"],
+      ["Financial Affairs", "Finance & purchasing", "Workday Financials Job Aids", "Find instructions for expenses, requisitions, suppliers, and invoices. Some linked guides require HMC access.", "expense report supplier invoice purchase order requisition purchase card reimburse travel", "https://www.hmc.edu/dco/workday-financials/forms-and-job-aids/"],
+      ["Financial Affairs", "Finance & purchasing", "Get Help with Workday Financials", "Find contacts for assistance with financial tasks in Workday.", "finance contact ambassador support help", "https://www.hmc.edu/dco/workday-financials/workday-assistance/"],
+      ["Mailroom", "Mail & deliveries", "Receive Mail and Packages", "Find delivery and address guidance for campus mail.", "receive parcel pickup shipping fedex ups delivery", "https://www.hmc.edu/dco/mailroom/incoming-mail-and-deliveries/"],
+      ["Mailroom", "Mail & deliveries", "Send Mail and Packages", "Find guidance for outgoing campus and external mail.", "postage intercampus mail usps shipping send package", "https://www.hmc.edu/dco/mailroom/outgoing-mail-and-deliveries/"],
+      ["Dining Services", "Dining & campus life", "Dining Services", "Find HMC dining information and contacts.", "food eat meal menu cafeteria", "https://www.hmc.edu/dco/dining-services/"],
+      ["Dining Services", "Dining & campus life", "Jay’s Place", "Find information for Jay’s Place.", "pizza food meal coffee hours", "https://www.hmc.edu/dco/dining-services/jays-place/"],
+      ["Dining Services", "Dining & campus life", "Hoch-Shanahan Dining Commons", "Find information for HMC’s dining commons.", "hoch lunch dinner breakfast hours cafeteria menu", "https://www.hmc.edu/dco/dining-services/hoch-shanahan-dining-commons/"],
+      ["Student Accounts", "Dining & campus life", "Claremont Cash", "Find information about Claremont Cash accounts.", "add money meal card cash balance transact", "https://www.hmc.edu/dco/student-accounts/board/claremont-cash/"],
+      ["Student Accounts", "Dining & campus life", "Food Plans", "Find information about food plans available through Student Accounts.", "meal dining board plan", "https://www.hmc.edu/dco/student-accounts/board/"],
+      ["Student Accounts", "Dining & campus life", "Contact Student Accounts", "Find the office handling student billing and account questions.", "refer student tuition statement bill student refund", "https://www.hmc.edu/dco/student-accounts/"],
+      ["Risk Management and Legal Affairs", "Risk & reporting", "Contact Risk Management and Legal Affairs", "Find College risk management and legal affairs contacts.", "risk insurance legal counsel contract", "https://www.hmc.edu/dco/risk-management-and-legal-affairs/"],
+      ["Risk Management and Legal Affairs", "Risk & reporting", "Risk Management Forms and Policies", "Browse forms and policies from Risk Management and Legal Affairs.", "insurance liability risk legal forms", "https://www.hmc.edu/dco/risk-management-and-legal-affairs/forms-and-policies/"],
+      ["Risk Management and Legal Affairs", "Risk & reporting", "EQS Integrity Line", "Find HMC’s integrity reporting information.", "ethics whistleblower report misconduct compliance", "https://www.hmc.edu/dco/risk-management-and-legal-affairs/forms-and-policies/whistleblower/"],
+      ["Registrar", "Academic administration", "Final Exam Schedule", "Find Registrar information about final exams.", "finals schedule exam time", "https://www.hmc.edu/registrar/academic-calendar/final-exams/"],
+      ["Registrar", "Academic administration", "Approved Course Times", "Find approved meeting times for courses.", "class time teaching schedule slots", "https://www.hmc.edu/registrar/academic-calendar/approved-course-times/"],
+      ["Registrar", "Academic administration", "Academic Policies", "Find academic policies published by the Registrar.", "grading grade policy academic rules", "https://www.hmc.edu/registrar/academic-policies/"],
+      ["Registrar", "Academic administration", "Registrar Forms", "Find academic forms from the Registrar.", "registration forms instructor permission", "https://www.hmc.edu/registrar/forms/"],
+      ["Registrar", "Academic administration", "Registration and Course Enrollment", "Find Registrar instructions for registration.", "add drop enroll class section course registration", "https://www.hmc.edu/registrar/registration/"],
+      ["Registrar", "Academic administration", "Transcripts and Enrollment Verification", "Find transcript, enrollment, and degree verification information.", "student records verification transcript degree", "https://www.hmc.edu/registrar/transcripts-verifications-and-diplomas/"],
+      ["Registrar", "Academic administration", "Student Records and FERPA", "Find the Registrar’s notice on student record rights.", "ferpa privacy education records", "https://www.hmc.edu/registrar/notification-of-student-rights/"],
+      ["Registrar", "Academic administration", "Student Data Release Policy", "Review HMC’s student data release policy.", "disclose share student information roster", "https://www.hmc.edu/registrar/data-requests/student-data-release-policy/"],
+      ["Dean of the Faculty", "Faculty support", "Contact the Office of the Dean of the Faculty", "Find contacts in the Dean of the Faculty’s office.", "dof faculty affairs academic dean", "https://www.hmc.edu/dean-of-faculty/dof-staff/"],
+      ["Dean of the Faculty", "Faculty support", "Faculty Development", "Explore professional development resources for faculty.", "training career ncfdd faculty workshop", "https://www.hmc.edu/dean-of-faculty/faculty-development-at-harvey-mudd-college/"],
+      ["Dean of the Faculty", "Faculty support", "Faculty Policies and Procedures", "Find faculty policies from the Dean of the Faculty.", "faculty handbook tenure promotion leave", "https://www.hmc.edu/dean-of-faculty/faculty-development-at-harvey-mudd-college/faculty-policies-and-procedures/"],
+      ["Dean of the Faculty", "Faculty support", "Faculty Mentoring", "Find HMC faculty mentoring information.", "mentor mentoring new faculty", "https://www.hmc.edu/dean-of-faculty/faculty-mentoring/"],
+      ["Dean of the Faculty", "Faculty support", "Early-Career Faculty Resources", "Find support resources for early-career faculty.", "onboarding new professor junior faculty", "https://www.hmc.edu/dean-of-faculty/resources-for-early-career-faculty/"],
+      ["Sponsored Faculty Research", "Grants & research", "Summer Research and Scholarship", "Find information about HMC’s summer research program.", "summer student research mentor", "https://www.hmc.edu/research/summer-research-and-scholarship/"],
+      ["Sponsored Faculty Research", "Grants & research", "Grant Proposal FAQ", "Find answers to common grant proposal questions.", "grant application help sponsored research", "https://www.hmc.edu/research/grant-proposal-preparation-faqs/"],
+      ["Sponsored Faculty Research", "Grants & research", "Submit a Grant Proposal", "Find HMC’s grant proposal submission process and timeline.", "submit grant proposal deadline pre award", "https://www.hmc.edu/research/grant-resources-administration/grant-proposal-timeline/"],
+      ["Sponsored Faculty Research", "Grants & research", "External Faculty Funding Opportunities", "Find external funding opportunities listed for HMC faculty.", "grant sponsor external funding fellowship", "https://www.hmc.edu/research/grant-resources-administration/external-faculty-research-grant-opportunities/"],
+      ["Sponsored Faculty Research", "Grants & research", "Prepare a Grant Proposal", "Find proposal preparation resources.", "write grant checklist proposal", "https://www.hmc.edu/research/grant-resources-administration/grant-proposal-preparations/"],
+      ["Sponsored Faculty Research", "Grants & research", "Budget a Research Grant", "Find guidance for preparing grant budgets.", "budget indirect cost fringe salary proposal", "https://www.hmc.edu/research/grant-resources-administration/grant-proposal-preparations/budgeting-information/"],
+      ["Sponsored Faculty Research", "Grants & research", "Administer a Research Award", "Find post-award grant administration resources.", "post award spending grant administration", "https://www.hmc.edu/research/grant-resources-administration/grant-administration/"],
+      ["Sponsored Faculty Research", "Grants & research", "Research Sub-Award Agreements", "Find guidance on research sub-awards.", "subaward agreement subcontract grant", "https://www.hmc.edu/research/grant-resources-administration/grant-proposal-preparations/sub-awards/"],
+      ["Sponsored Faculty Research", "Grants & research", "Research Conflicts of Interest", "Find guidance on conflicts of interest for sponsored research.", "coi disclosure grant", "https://www.hmc.edu/research/grant-resources-administration/grant-proposal-preparations/conflicts-of-interest/"],
+      ["Sponsored Faculty Research", "Grants & research", "IRB Guidance", "Find HMC’s guidance for research involving human participants.", "institutional review board human subjects protocol approval", "https://www.hmc.edu/research/grant-resources-administration/irb-guidance/"],
+      ["Sponsored Faculty Research", "Grants & research", "Award Compliance", "Find award administration compliance information.", "sponsored grant compliance reporting", "https://www.hmc.edu/research/grant-resources-administration/grant-administration/compliance/"],
+      ["Sponsored Faculty Research", "Grants & research", "HMC-Sponsored Faculty Research Grants", "Find internal HMC faculty research grant opportunities.", "internal funding research grant seed", "https://www.hmc.edu/research/internal-faculty-research-grant-opportunities/"],
+      ["The Claremont Colleges Library", "Library & scholarship", "Ask a Librarian", "Get help from The Claremont Colleges Library.", "reference research help library contact", "https://library.claremont.edu/ask-us/"],
+      ["The Claremont Colleges Library", "Library & scholarship", "Request Library Instruction", "Find library instruction support for a course.", "request librarian classroom session information literacy", "https://library.claremont.edu/library-instruction/"],
+      ["The Claremont Colleges Library", "Library & scholarship", "Scholarly Communication and Publishing", "Find library support for scholarly publishing and sharing research.", "publish scholarly communications scholarly identity", "https://library.claremont.edu/scholarly-communication/"],
+      ["The Claremont Colleges Library", "Library & scholarship", "Copyright and Fair Use Support", "Find library resources on copyright and fair use.", "copyright permission teaching materials", "https://library.claremont.edu/copyright-resources/"],
+      ["The Claremont Colleges Library", "Library & scholarship", "Open Educational Resources", "Find resources for using open course materials.", "oer open textbooks affordability", "https://library.claremont.edu/open-educational-resources/"],
+      ["The Claremont Colleges Library", "Library & scholarship", "Find Streaming Video for Teaching", "Find the library’s streaming video resources.", "film movie documentary streaming", "https://library.claremont.edu/streaming/"],
+      ["The Claremont Colleges Library", "Library & scholarship", "Course Readings and Reserves", "Find library course readings and information for instructors.", "reserve course reserves textbooks readings submit library", "https://library.claremont.edu/course-readings/"],
+      ["The Claremont Colleges Library", "Library & scholarship", "Suggest a Library Purchase", "Find the library’s purchase request form and guidelines.", "order purchase request book journal", "https://library.claremont.edu/suggest-purchases/"],
+      ["The Claremont Colleges Library", "Library & scholarship", "Special Collections and Archives", "Find special collections services and materials.", "rare books archives primary sources", "https://library.claremont.edu/sca/"],
+      ["The Claremont Colleges Library", "Library & scholarship", "Data Analysis and Visualization Support", "Find library data analysis and visualization resources.", "statistics viz research analysis", "https://library.claremont.edu/data-analysis-visualization/"],
+      ["The Claremont Colleges Library", "Library & scholarship", "Library Research Data Management", "Find library support for managing research data.", "dmp data management plan research", "https://library.claremont.edu/research-data-management/"],
+      ["The Claremont Colleges Library", "Library & scholarship", "Dryad Data Repository", "Find information on using Dryad for research data.", "share deposit data repository", "https://library.claremont.edu/dryad/"],
+      ["Communications and Marketing", "Communications & web", "Request Creative Services", "Find the College’s creative services request entry point.", "design marketing graphic project brochure", "https://www.hmc.edu/communications/creative-services/"],
+      ["Communications and Marketing", "Communications & web", "Order a Name Badge", "Find HMC’s staff and faculty name badge ordering instructions.", "name tag order badge", "https://www.hmc.edu/communications/creative-services/hmc-name-badge/"],
+      ["Communications and Marketing", "Communications & web", "Request Photography or Video", "Find information about College photography and video support.", "photo shoot headshot videography", "https://www.hmc.edu/communications/creative-services/photography-and-videography/"],
+      ["Communications and Marketing", "Communications & web", "Order HMC Stationery", "Find College stationery ordering information.", "business card letterhead envelopes stationary", "https://www.hmc.edu/communications/creative-services/hmc-stationery/"],
+      ["Communications and Marketing", "Communications & web", "Plan and Promote an HMC Event", "Find Communications event resources for employees.", "event promotion publicity planning calendar", "https://www.hmc.edu/communications/creative-services/event-information/"],
+      ["Communications and Marketing", "Communications & web", "WordPress Website Help", "Find help for editing HMC WordPress pages.", "website content editor CMS wordpress", "https://www.hmc.edu/communications/wordpress-how-tos/"],
+      ["Communications and Marketing", "Communications & web", "Web Accessibility Resources", "Find resources for making HMC web content accessible.", "alt text pdf website accessibility", "https://www.hmc.edu/communications/accessibility-resources/"],
+      ["Communications and Marketing", "Communications & web", "Request Media Help", "Find media support for faculty and staff.", "press interview news journalist", "https://www.hmc.edu/communications/media-help-for-faculty-and-staff/"],
+      ["Communications and Marketing", "Communications & web", "Download HMC Templates", "Find College-branded professional templates.", "slides powerpoint letterhead presentation template", "https://www.hmc.edu/communications/templates/"],
+      ["Communications and Marketing", "Communications & web", "Create an HMC Email Signature", "Open the College’s email signature generator.", "signature outlook gmail branding", "https://www.hmc.edu/communications/templates/email-signature-generator/"],
+      ["Communications and Marketing", "Communications & web", "Campus Events Calendar", "See upcoming HMC events.", "events calendar activities", "https://www.hmc.edu/calendar/"],
+      ["Communications and Marketing", "Communications & web", "Request Help with an HMC Website", "Open the web assistance request form linked by HMC.", "website edit update wrike request", "https://www.wrike.com/frontend/requestforms/index.html?token=eyJhY2NvdW50SWQiOjI3NDc5OTQsInRhc2tGb3JtSWQiOjg0NTM0Nn0JNDgzMTI5OTM5MDE0MAkzZDRiYjg5MTEzZDRjNzRjOTVmNDRmNzhmZDIyMWVjNDdiYWQyYTMxYWFmNGY1NGVmZjllNzYzZmZhODI5Y2M0"],
+      ["Emergency Preparedness and Safety", "Campus safety", "Emergency Procedures", "Find the College’s emergency procedures.", "emergency earthquake fire campus", "https://www.hmc.edu/emergency-preparedness/emergency-procedures/"],
+      ["Emergency Preparedness and Safety", "Campus safety", "Campus Evacuation Plan and Map", "Find the College’s evacuation guidance and map.", "evacuate assembly area earthquake fire", "https://www.hmc.edu/emergency-preparedness/emergency-procedures/evacuation-plan-and-map/"],
+      ["Emergency Preparedness and Safety", "Campus safety", "Mudd Alert", "Find information about HMC emergency notifications.", "sign up alerts notification emergency text", "https://www.hmc.edu/emergency-preparedness/mudd-alert/"],
+      ["Emergency Preparedness and Safety", "Campus safety", "Emergency Preparedness Training", "Find HMC emergency preparedness training information.", "emergency response training preparedness", "https://www.hmc.edu/emergency-preparedness/emergency-preparedness/training/"],
+      ["Emergency Preparedness and Safety", "Campus safety", "Faculty and Staff Safety Resources", "Find HMC workplace safety resources.", "employee safety training policies", "https://www.hmc.edu/emergency-preparedness/employee-safety/"],
+      ["Emergency Preparedness and Safety", "Campus safety", "Departmental and Laboratory Safety", "Find safety resources for departments and labs.", "lab safety chemical laboratory", "https://www.hmc.edu/emergency-preparedness/employee-safety/laboratory-safety/"],
+      ["Emergency Preparedness and Safety", "Campus safety", "Employee and Supervisor Safety Training", "Find workplace safety training resources.", "safety training supervisor employee", "https://www.hmc.edu/emergency-preparedness/employee-safety/safety-training/"],
+      ["Emergency Preparedness and Safety", "Campus safety", "Request an Ergonomic Evaluation", "Find HMC ergonomic evaluation resources.", "workstation desk chair ergonomic assessment", "https://www.hmc.edu/emergency-preparedness/employee-safety/ergonomic-evaluations/"],
+      ["Emergency Preparedness and Safety", "Campus safety", "Workplace Violence Prevention Plan", "Find the College’s prevention plan and resources.", "workplace violence prevention report", "https://www.hmc.edu/emergency-preparedness/emergency-preparedness-safety/workplace-violence-prevention-plan/"],
+      ["Emergency Preparedness and Safety", "Campus safety", "Campus Safety", "Open The Claremont Colleges Campus Safety resource page.", "security escort safety dispatch lost found", "https://services.claremont.edu/campus-safety/"],
+      ["Emergency Preparedness and Safety", "Campus safety", "Employee Injury Report (PDF)", "Open the injury report form for employees.", "accident workplace injury report employee", "https://www.hmc.edu/human-resources/wp-content/uploads/sites/23/2021/11/Employees-Report-2021.pdf"],
+      ["Emergency Preparedness and Safety", "Campus safety", "Supervisor Injury Report (PDF)", "Open the injury report form for supervisors.", "worker accident report injury supervisor", "https://www.hmc.edu/human-resources/wp-content/uploads/sites/23/2021/11/Supervisors-Report-2021.pdf"],
+      ["Student Life", "Student referrals", "Refer a Student to the Dean of Students", "Find contacts and support resources for students.", "student concern refer support dean wellbeing", "https://www.hmc.edu/dos/"],
+      ["Student Life", "Student referrals", "International Students and Scholars", "Find the HMC office that supports international students and scholars.", "international scholar student visa referral", "https://www.hmc.edu/international-students/"],
+      ["Student Life", "Student referrals", "Submit a Title IX Incident Report", "Open the official HMC Title IX incident reporting form.", "title ix sexual harassment misconduct report maxient", "https://cm.maxient.com/reportingform.php?HarveyMuddCollege=&layout_id=2"],
+      ["Student Life", "Student referrals", "Title IX Support Resources", "Find HMC and consortium Title IX support resources.", "title ix advocacy harassment sexual assault support", "https://www.hmc.edu/student-life/title-ix/resources/"],
+      ["CIS", "Technology support", "Computing Resources for Faculty", "Find technology resources maintained for HMC faculty.", "cis instructor faculty technology", "https://www.hmc.edu/cis/faculty-resources/"],
+      ["CIS", "Technology support", "Computing Resources for Staff", "Find technology resources maintained for HMC staff.", "cis employee staff technology", "https://www.hmc.edu/cis/staff-resources/"],
+      ["CIS", "Technology support", "Academic and Scientific Software Support", "Find support for academic and scientific software.", "software matlab license installation math research", "https://www.hmc.edu/cis/services/academic-and-scientific-software-support/"],
+      ["CIS", "Technology support", "Adobe Acrobat", "Find HMC support information about Adobe Acrobat.", "edit pdf acrobat pro adobe", "https://www.hmc.edu/cis/services/adobe-acrobat/"],
+      ["CIS", "Technology support", "Adobe Creative Cloud", "Find HMC information about Adobe Creative Cloud.", "photoshop illustrator indesign premiere license", "https://www.hmc.edu/cis/services/adobe-creative-cloud/"],
+      ["Registrar", "Academic administration", "Academic Calendar", "Check semester dates, breaks, and academic deadlines.", "calendar semester academic holiday term", "https://www.hmc.edu/registrar/academic-calendar/"],
+      ["Registrar", "Academic administration", "Request Registrar Data", "Find the Registrar’s student data request process.", "request registrar data academic records enrollment", "https://www.hmc.edu/registrar/data-requests/"],
+      ["Institutional Research", "Data & reporting", "Request Institutional Research Data", "Find the institutional data request process.", "campus statistics survey institutional data enrollment reporting", "https://www.hmc.edu/institutional-research/institutional-statistics/data-requests/"],
+      ["Institutional Research", "Data & reporting", "Consumer Information", "Find institutional disclosures published by HMC.", "heoa consumer information report disclosures", "https://www.hmc.edu/institutional-research/higher-education-opportunity-act-heoa/"],
+      ["Advancement", "Data & reporting", "Request Advancement Data", "Open the Advancement Services request form linked by HMC.", "alumni donor advancement data request kuali", "https://hmc.kualibuild.com/app/6488e58d96113b02080c8c13/start"],
+      ["Advancement", "Data & reporting", "Contact Advancement", "Find the Office of Advancement’s contact information.", "advancement fundraising donor giving gift", "https://www.hmc.edu/giving/contact/"],
+      ["Communications and Marketing", "Communications & web", "Find HMC Photos in Canto", "Open HMC’s digital asset library for College photography.", "hmc image photo brand photography presentation canto", "https://harveymuddcollege.canto.com/allfiles?viewIndex=0"],
+      ["Communications and Marketing", "Communications & web", "Brand and Identity Standards", "Find College logos, color palette, and brand standards.", "logo colors typography gold branding identity", "https://www.hmc.edu/communications/identity-standards/"],
+      ["Communications and Marketing", "Communications & web", "Editorial Style Guide", "Find College editorial conventions for publications.", "writing style capitalization publications", "https://www.hmc.edu/communications/identity-standards/editorial-style-guide/"],
+      ["Mailroom", "Mail & deliveries", "Request Metered Mail (PDF)", "Open the College mailroom metered mail request form.", "usps postage meter outgoing mail", "https://www.hmc.edu/bao/wp-content/uploads/sites/28/2014/01/meter-request-form.pdf"],
+      ["Campus directory", "Campus information", "Find an HMC Office or Contact", "Open the College’s directory and contact information page.", "directory email phone office person address contact", "https://www.hmc.edu/resources/directory/"],
+      ["Campus directory", "Campus information", "Campus Map", "Open the official interactive campus map.", "directions locate room building parking map", "https://map.concept3d.com/?id=656"],
+      ["Campus directory", "Campus information", "Mudd Community Resources A–Z", "Browse the College’s broader index of offices and resources.", "campus directory department services a z", "https://www.hmc.edu/resources/"],
+      ["Campus directory", "Campus information", "Faculty and Staff Resources", "Open HMC’s official faculty and staff resources page.", "faculty staff resource forms links", "https://www.hmc.edu/resources/faculty-staff/"],
+      ["Dean of the Faculty", "Faculty support", "Academic Affairs and Advising", "Find resources from the Office of Academic Affairs.", "faculty academic advising advising support class grades", "https://www.hmc.edu/dean-of-faculty/academic-affairs/"],
+      ["Dean of the Faculty", "Faculty support", "Clinic Program", "Find information about HMC’s Clinic Program.", "faculty advisor sponsor project clinic capstone", "https://www.hmc.edu/clinic/"],
+      ["Student Life", "Student referrals", "Office of Accessible Education", "Find student academic accommodation and accessibility resources.", "student accommodations disability accessible education class", "https://www.hmc.edu/student-success/accessible-education/"],
+      ["Student Life", "Student referrals", "Learning Programs", "Find HMC learning support resources to share with students.", "tutoring learning student support academic", "https://www.hmc.edu/learning-programs/"],
+      ["Student Life", "Student referrals", "Career Services", "Find resources and contacts for referring students for career support.", "student career internship resume jobs", "https://www.hmc.edu/career-services/"],
+      ["Student Life", "Student referrals", "Office of Institutional Diversity", "Find HMC institutional diversity programs and resources.", "oid diversity inclusion equity campus", "https://www.hmc.edu/diversity/"],
+      ["Student Life", "Student referrals", "Civic and Community Engagement", "Find HMC’s civic engagement resources.", "community partner service learning volunteer civic", "https://www.hmc.edu/engagement/"],
+      ["CIS", "Technology support", "Contact the CIS Help Desk", "Find HMC technology help and contact details.", "it ticket helpdesk computer hardware software troubleshooting", "https://www.hmc.edu/cis/"],
+      ["CIS", "Technology support", "AI at HMC", "Find campus AI resources from CIS.", "generative ai policy guidance tools", "https://www.hmc.edu/cis/ai-at-hmc"],
+      ["The Claremont Colleges Library", "Library & scholarship", "Interlibrary Loan", "Request books, articles, or other materials through the library’s resource sharing service.", "ill borrow article book request interlibrary loan", "https://library.claremont.edu/resource-sharing/"],
+      ["Dean of the Faculty", "Faculty support", "Teaching and Learning Committee", "Find faculty teaching development resources and the multi-campus teaching observation program.", "peer teaching observation pedagogy faculty feedback", "https://www.hmc.edu/dean-of-faculty/teaching-and-learning-committee/"],
+      ["Student Life", "Student referrals", "Writing Center", "Find student writing support and writing resources for faculty.", "writing consultation paper essay peer tutor faculty", "https://www.hmc.edu/learning-programs/writing-center/"]
+    ].map(([department,category,name,description,keywords,url]) => ({
+      department,category,name,description,keywords,url,icon:'◇'
+    }));
+    services.push(...campusServices, ...departmentServices);
     const input=document.getElementById('q'), filters=document.getElementById('filters'), results=document.getElementById('results'), count=document.getElementById('count'), clear=document.getElementById('clear');
+    const department=document.getElementById('department');
+    const more=document.getElementById('more');
+    const websiteSearch=document.getElementById('website-search');
+    const pageSize=18;
+    let limit=pageSize;
+    let focusResult=false;
+    for (const name of [...new Set(services.map(service => service.department))].sort()) {
+      const option=document.createElement('option');
+      option.value=name;
+      option.textContent=name === 'CIS' ? 'Computing and Information Services (CIS)' : name;
+      department.append(option);
+    }
+    const searchWordsToIgnore = new Set(['a','an','the','to','how','do','i','for','my','in','with','of']);
     let selected='All services';
     const normalize=s=>s.toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,' ').trim();
     const synonyms={record:['lecture capture','video','recording'],grading:['gradescope','grade'],grade:['gradescope','grading'],pdf:['accessibility','document'],accessible:['accessibility'],ai:['gemini','copilot','notebooklm'],wifi:['wireless'],password:['credentials','account'],borrow:['loaner','laptop'],rubric:['gradescope'],meeting:['zoom'],survey:['forms']};
-    function matches(service,query){
-      const tokens=normalize(query).split(/\s+/).filter(Boolean);if(!tokens.length)return true;
-      const hay=normalize([service.name,service.description,service.category,service.keywords].join(' '));
-      return tokens.every(token=>hay.includes(token)||((synonyms[token]||[]).some(term=>hay.includes(term))));
+    function getTokens(query) {
+      return normalize(query).split(/\s+/).filter(token => token && !searchWordsToIgnore.has(token));
+    }
+    function relevance(service,tokens) {
+      const title=normalize(service.name);
+      const hay=normalize([service.name,service.description,service.category,service.department,service.keywords].join(' '));
+      const words=new Set(hay.split(' '));
+      const titleWords=new Set(title.split(' '));
+      let score=0;
+      for (const token of tokens) {
+        if (titleWords.has(token)) score+=5;
+        else if (words.has(token)) score+=3;
+        else if (token.length>=3 && hay.includes(token)) score+=1;
+        else if (Object.hasOwn(synonyms,token) && synonyms[token].some(term=>hay.includes(term))) score+=1;
+        else return -1;
+      }
+      if (tokens.length && title.includes(tokens.join(' '))) score+=10;
+      return score;
     }
     function draw(){
       const query=input.value;
+      const activeCategory=filters.contains(document.activeElement);
+      const available=services.filter(service => !department.value || service.department===department.value);
+      const categories=['All services', ...new Set(available.map(service => service.category))];
       clear.style.display=query?'block':'none';
       filters.innerHTML='';
-      for(const category of categories){const b=document.createElement('button');b.type='button';b.className='filter';b.textContent=category;b.setAttribute('aria-pressed',String(selected===category));b.addEventListener('click',()=>{selected=category;draw();});filters.append(b);}
-      const found=services.filter(s=>(selected==='All services'||s.category===selected)&&matches(s,query));
-      count.textContent=`${found.length} of ${services.length} services`;
+      for(const category of categories){const b=document.createElement('button');b.type='button';b.className='filter';b.textContent=category;b.setAttribute('aria-pressed',String(selected===category));b.addEventListener('click',()=>{selected=category;refresh();});filters.append(b);if(activeCategory&&category===selected)b.focus();}
+      const tokens=getTokens(query);
+      const found=available
+        .filter(service => selected === 'All services' || service.category === selected)
+        .map(service => ({service,score:relevance(service,tokens)}))
+        .filter(result => result.score >= 0)
+        .sort((a,b) => b.score-a.score || a.service.name.localeCompare(b.service.name));
+      const shown=Math.min(found.length,limit);
+      count.textContent=shown<found.length ? `Showing ${shown} of ${found.length} matches` : `${found.length} of ${available.length} services`;
+      more.hidden=shown===found.length;
+      websiteSearch.hidden=!query.trim();
+      if (query.trim()) {
+        websiteSearch.href='https://www.google.com/search?' + new URLSearchParams({q:'site:hmc.edu '+query.trim()});
+      } else websiteSearch.removeAttribute('href');
       results.innerHTML='';
-      if(!found.length){const e=document.createElement('div');e.className='empty';e.style.gridColumn='1 / -1';e.innerHTML='<strong>No matching services found</strong>Try another phrase or clear the category filter.';const b=document.createElement('button');b.className='reset';b.textContent='Show all services';b.addEventListener('click',()=>{input.value='';selected='All services';draw();input.focus();});e.append(b);results.append(e);return;}
-      for(const s of found){
+      if (!found.length) {
+        const empty=document.createElement('div');
+        empty.className='empty';
+        empty.style.gridColumn='1 / -1';
+        empty.innerHTML='<strong>No matching services found</strong>Try a different phrase, reset the filters, or search the public HMC website below.';
+        const reset=document.createElement('button');
+        reset.className='reset';
+        reset.textContent='Show all services';
+        reset.addEventListener('click',()=>{
+          input.value='';
+          selected='All services';
+          department.value='';
+          refresh();
+          input.focus();
+        });
+        empty.append(reset);
+        results.append(empty);
+        return;
+      }
+      for (const {service:s} of found.slice(0,limit)) {
         const article=document.createElement('article');article.className='card';
         const top=document.createElement('div');top.className='card-top';
         const icon=document.createElement('span');icon.className='icon';icon.setAttribute('aria-hidden','true');icon.textContent=s.icon;
-        const pill=document.createElement('span');pill.className='pill';pill.textContent=s.category;top.append(icon,pill);
+        const pill=document.createElement('span');pill.className='pill';pill.textContent=s.department==='Facilities and Maintenance' ? s.department : `${s.department} · ${s.category}`;top.append(icon,pill);
         const h=document.createElement('h2');h.textContent=s.name;
         const p=document.createElement('p');p.textContent=s.description;
-        const a=document.createElement('a');a.href=s.url;a.target='_blank';a.rel='noopener noreferrer';a.textContent='View official service ↗';a.setAttribute('aria-label',`View official HMC page for ${s.name} (opens in new tab)`);
+        const a=document.createElement('a');a.href=s.url;a.target='_blank';a.rel='noopener noreferrer';a.textContent='View official service ↗';a.setAttribute('aria-label',`Open official resource for ${s.name} (opens in new tab)`);
         article.append(top,h,p,a);results.append(article);
       }
+      if (focusResult) {
+        const next=results.children[limit-pageSize];
+        const link=next?.querySelector('a');
+        link?.focus();
+        focusResult=false;
+      }
     }
-    input.addEventListener('input',draw);
-    clear.addEventListener('click',()=>{input.value='';draw();input.focus();});
-    document.querySelectorAll('[data-query]').forEach(b=>b.addEventListener('click',()=>{input.value=b.dataset.query;selected='All services';draw();input.focus();}));
+    function refresh() {
+      limit=pageSize;
+      draw();
+    }
+    more.addEventListener('click',()=>{
+      limit+=pageSize;
+      focusResult=true;
+      draw();
+    });
+    department.addEventListener('change',()=>{selected='All services';refresh();});
+    input.addEventListener('input',refresh);
+    clear.addEventListener('click',()=>{input.value='';refresh();input.focus();});
+    document.querySelectorAll('[data-query]').forEach(button=>button.addEventListener('click',()=>{
+      input.value=button.dataset.query;
+      selected='All services';
+      department.value='';
+      refresh();
+      input.focus();
+    }));
     draw();
   </script>
 </body>
